@@ -7,6 +7,8 @@ Created on Tue Sep 10 07:53:21 2019
 
 import random
 
+HAND_SIZE = 6
+CARD_ORDINAL_NUMBERS = ['first','second','third','fourth','fifth','sixth']
 
 
 class player():
@@ -29,8 +31,16 @@ class game():
     
     
     
-    def __init__(self, n_players, min_range = 2, max_range = 100):        
+    def __init__(self, 
+                 n_players, 
+                 min_range = 2, 
+                 max_range = 100, 
+                 cards_per_turn = 2,
+                 number_piles = 4):        
         self.deck = list(range(min_range,max_range))
+        self.cpt = min(cards_per_turn,6)
+        self.number_piles = number_piles
+        
         random.shuffle(self.deck)
         
         self.players = {}
@@ -137,7 +147,12 @@ class game():
         
         self.piles[pile - 1].append(card)
         player.play_card(card)
-        player.add_card(self.draw_card())
+        
+    def replenish_hand(self, player):
+        
+        while len(player.cards) < HAND_SIZE:
+            #print(f'debug: hand size = {len(player.cards)}')
+            player.add_card(self.draw_card())
     
     
     def _validate_input_entry(self,text):
@@ -152,30 +167,34 @@ class game():
     
     def play_turn(self, player):
         
-        print(self.hand_statement(player))
-        print(self.pile_statement())
         print('deck length: {0}'.format(len(self.deck)))
 
-        
-        while True:       
-            card_to_play = self._validate_input_entry(input('Enter card value to play first: '))
-            if card_to_play in player.cards:
-                break;
-            else:
-                print('Play a card you own - {0} is not in your hand'.format(card_to_play))
-        while True:
-            pile_to_play = int(input('Enter pile to play card on: '))
-            if pile_to_play <= 4:
-                if self.valid_play(card_to_play, pile_to_play):
+        for play_index in range(self.cpt):
+            
+            print(self.hand_statement(player))
+            print(self.pile_statement())
+
+            while True:#choose an available card       
+                card_to_play = self._validate_input_entry(input(f'Enter card value to play {CARD_ORDINAL_NUMBERS[play_index]}: '))
+                if card_to_play in player.cards:
                     break;
                 else:
-                    print('Try again, card cannot be played on this pile.')
-            else:
-                print('Try again, pile not valid')
-                
-        self.play_card(player, card_to_play, pile_to_play)
-        
-        print(self.pile_statement())
+                    print('Play a card you own - {0} is not in your hand'.format(card_to_play))
+                    
+            while True:#choose a suitable pile
+                pile_to_play = int(input('Enter pile to play card on: '))
+                if pile_to_play <= self.number_piles:
+                    if self.valid_play(card_to_play, pile_to_play):
+                        break;
+                    else:
+                        print('Try again, card cannot be played on this pile.')
+                else:
+                    print('Try again, pile not valid')
+                    
+            self.play_card(player, card_to_play, pile_to_play)
+            
+            
+        self.replenish_hand(player)
         
 
 
@@ -198,9 +217,7 @@ class game():
         print(self.pile_statement())
         print('Your piles look like this:')
         print(self.detailed_pile_statement())
-
-        
-        
+     
     
     def play_game(self):
         
@@ -216,11 +233,7 @@ class game():
                     break
                     
             
-        
-        
-        
-
-
+    
 
 current_game = game(2)
 current_game.play_game()
@@ -231,5 +244,5 @@ current_game.play_game()
 ## TODO: if deck < n_players * 6 - will crash at initial deck set up
 ## Loss conditions
 ## currently hardcoded number of piles - easier game at more piles
-## exit if non integer
+## exit if non integer - convert to if elif loop where else if 'x' break out of game completley
 
