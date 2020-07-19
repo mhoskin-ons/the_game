@@ -6,10 +6,18 @@ Created on Tue Sep 10 07:53:21 2019
 """
 
 import random
+import sys
 
 HAND_SIZE = 6
 CARD_ORDINAL_NUMBERS = ['first','second','third','fourth','fifth','sixth']
 
+class BaseGameException(BaseException): 
+    
+    pass
+
+class ProgramExit(BaseGameException): 
+    
+    pass
 
 class player():
     
@@ -164,7 +172,17 @@ class game():
             print('This will be fixed in a later release')
             raise
     
-    
+    def no_moves(self, player):
+                
+        for card in player.cards:
+            for pile_idx in range(self.number_piles):
+                if self.valid_play(card, pile_idx + 1):
+                    return True
+        
+        
+        return False
+          
+   
     def play_turn(self, player):
         
         print('deck length: {0}'.format(len(self.deck)))
@@ -173,6 +191,10 @@ class game():
             
             print(self.hand_statement(player))
             print(self.pile_statement())
+                        
+            if self.no_moves(player):               
+                self.game_lose()
+                
 
             while True:#choose an available card       
                 card_to_play = self._validate_input_entry(input(f'Enter card value to play {CARD_ORDINAL_NUMBERS[play_index]}: '))
@@ -211,33 +233,61 @@ class game():
                 
         return win
     
+    
+    def game_lose(self):
+        
+        print('You have no possible moves!')
+        print('The final board values are:')
+        self.game_end()
+        
+        print('You lose! Good day!')
+        
+        raise ProgramExit
+
+
+    
     def game_win(self):
         
         print('You have won the game! The final board values are:')
+        self.game_end()
+        
+        raise ProgramExit
+    
+    
+    def game_end(self):
+        
         print(self.pile_statement())
         print('Your piles look like this:')
         print(self.detailed_pile_statement())
-     
+    
     
     def play_game(self):
         
-        game_running = True
+        self.game_running = True
         
-        while game_running == True:
+        while self.game_running == True:
             
             for player in self.players.values():
                 self.play_turn(player)
                 if self.win_condition():
                     self.game_win()
-                    game_running = False
+                    self.game_running = False
                     break
+                
                     
-            
+
+if __name__ == "__main__":
+    try:
+        current_game = game(2)
+        current_game.play_game()
+    except ProgramExit:
+        print("Goodbye!")
+                
     
 
-current_game = game(2)
-current_game.play_game()
-
+#current_game = game(2)
+#current_game.play_game()
+#
 
 
 
