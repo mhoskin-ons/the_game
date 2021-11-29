@@ -177,10 +177,11 @@ class game():
         for card in player.cards:
             for pile_idx in range(self.number_piles):
                 if self.valid_play(card, pile_idx + 1):
-                    return True
+                    
+                    return False
         
         
-        return False
+        return True
           
    
     def play_turn(self, player):
@@ -208,6 +209,7 @@ class game():
                 if pile_to_play <= self.number_piles:
                     if self.valid_play(card_to_play, pile_to_play):
                         break;
+                        
                     else:
                         print('Try again, card cannot be played on this pile.')
                 else:
